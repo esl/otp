@@ -1,0 +1,153 @@
+***************
+*** 3514,3520 ****
+  	    erts_thr_progress_active(esdp, thr_prgr_active = 1);
+  	    sched_wall_time_change(esdp, 1);
+          }
+-         
+  #ifdef ERTS_DIRTY_SCHEDULERS
+          if (ERTS_RUNQ_IX_IS_DIRTY(rq->ix)) {
+              erts_smp_spin_lock(&rq->sleepers.lock);
+--- 3515,3521 ----
+  	    erts_thr_progress_active(esdp, thr_prgr_active = 1);
+  	    sched_wall_time_change(esdp, 1);
+          }
++ 
+  #ifdef ERTS_DIRTY_SCHEDULERS
+          if (ERTS_RUNQ_IX_IS_DIRTY(rq->ix)) {
+              erts_smp_spin_lock(&rq->sleepers.lock);
+***************
+*** 3538,3544 ****
+              erts_smp_spin_unlock(&rq->sleepers.lock);
+          }
+  #endif
+-         
+  	erts_smp_runq_lock(rq);
+  	sched_active(esdp->no, rq);
+  
+--- 3539,3545 ----
+              erts_smp_spin_unlock(&rq->sleepers.lock);
+          }
+  #endif
++ 
+  	erts_smp_runq_lock(rq);
+  	sched_active(esdp->no, rq);
+  
+***************
+*** 7535,7541 ****
+      if (sched_type != ERTS_SCHED_NORMAL)
+          ERTS_HDBG_CHK_SLEEP_LIST(&esdp->run_queue->sleepers, !0, NULL, ssi);
+  #endif
+-     
+      if (erts_smp_atomic32_read_nob(&ssi->flags) & ERTS_SSI_FLG_MSB_EXEC) {
+          ASSERT(no == 1);
+          if (!msb_scheduler_type_switch(sched_type, esdp, no))
+--- 7536,7542 ----
+      if (sched_type != ERTS_SCHED_NORMAL)
+          ERTS_HDBG_CHK_SLEEP_LIST(&esdp->run_queue->sleepers, !0, NULL, ssi);
+  #endif
++ 
+      if (erts_smp_atomic32_read_nob(&ssi->flags) & ERTS_SSI_FLG_MSB_EXEC) {
+          ASSERT(no == 1);
+          if (!msb_scheduler_type_switch(sched_type, esdp, no))
+***************
+*** 9003,9009 ****
+      }
+  
+   done:
+- 	
+      if (rp && rp != ERTS_PROC_LOCK_BUSY && !(pid_locks & ERTS_PROC_LOCK_STATUS))
+  	erts_smp_proc_unlock(rp, ERTS_PROC_LOCK_STATUS);
+      if (unlock_c_p_status)
+--- 9004,9010 ----
+      }
+  
+   done:
++ 
+      if (rp && rp != ERTS_PROC_LOCK_BUSY && !(pid_locks & ERTS_PROC_LOCK_STATUS))
+  	erts_smp_proc_unlock(rp, ERTS_PROC_LOCK_STATUS);
+      if (unlock_c_p_status)
+***************
+*** 9876,9882 ****
+  	}
+  
+  	p->fcalls = reds;
+- 	    
+  	ERTS_SMP_CHK_HAVE_ONLY_MAIN_PROC_LOCK(p);
+  
+  	/* Never run a suspended process */
+--- 9877,9883 ----
+  	}
+  
+  	p->fcalls = reds;
++ 
+  	ERTS_SMP_CHK_HAVE_ONLY_MAIN_PROC_LOCK(p);
+  
+  	/* Never run a suspended process */
+***************
+*** 12412,12418 ****
+  		if (need_locks
+  		    && erts_smp_proc_trylock(rp, need_locks) == EBUSY) {
+  		    /* ... but we havn't got all locks on it ... */
+- 		    save_pending_exiter(rp, NULL); 
+  		    /*
+  		     * The pending exit will be discovered when next
+  		     * process is scheduled in
+--- 12413,12419 ----
+  		if (need_locks
+  		    && erts_smp_proc_trylock(rp, need_locks) == EBUSY) {
+  		    /* ... but we havn't got all locks on it ... */
++ 		    save_pending_exiter(rp, NULL);
+  		    /*
+  		     * The pending exit will be discovered when next
+  		     * process is scheduled in
+***************
+*** 12448,12454 ****
+  		set_proc_exiting(rp, state, rsn_cpy, bp);
+  	    }
+  	    else { /* Process running... */
+-  
+  		/*
+  		 * The pending exit will be discovered when the process
+  		 * is scheduled out if not discovered earlier.
+--- 12449,12455 ----
+  		set_proc_exiting(rp, state, rsn_cpy, bp);
+  	    }
+  	    else { /* Process running... */
++ 
+  		/*
+  		 * The pending exit will be discovered when the process
+  		 * is scheduled out if not discovered earlier.
+***************
+*** 12670,12676 ****
+  	    /* else: demonitor while we exited, i.e. do nothing... */
+  	    erts_smp_proc_unlock(rp, rp_locks);
+  	} else { /* external by pid or name */
+- 	    ASSERT(is_external_pid(mon->u.pid));    
+  	    dep = external_pid_dist_entry(mon->u.pid);
+  	    ASSERT(dep != NULL);
+  	    if (dep) {
+--- 12671,12677 ----
+  	    /* else: demonitor while we exited, i.e. do nothing... */
+  	    erts_smp_proc_unlock(rp, rp_locks);
+  	} else { /* external by pid or name */
++ 	    ASSERT(is_external_pid(mon->u.pid));
+  	    dep = external_pid_dist_entry(mon->u.pid);
+  	    ASSERT(dep != NULL);
+  	    if (dep) {
+***************
+*** 12857,12863 ****
+  {
+      p->arity = 0;		/* No live registers */
+      p->fvalue = reason;
+-     
+  
+  #ifdef USE_VM_PROBES
+      if (DTRACE_ENABLED(process_exit)) {
+--- 12858,12864 ----
+  {
+      p->arity = 0;		/* No live registers */
+      p->fvalue = reason;
++ 
+  
+  #ifdef USE_VM_PROBES
+      if (DTRACE_ENABLED(process_exit)) {
